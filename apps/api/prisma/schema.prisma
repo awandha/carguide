@@ -1,0 +1,52 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+// generator client {
+//   provider = "prisma-client"
+//   output   = "../generated/prisma"
+// }
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Brand {
+  id        Int        @id @default(autoincrement())
+  name      String     @unique
+  slug      String     @unique
+  models    CarModel[]
+  createdAt DateTime   @default(now())
+}
+
+model CarModel {
+  id          Int          @id @default(autoincrement())
+  name        String
+  slug        String
+  brandId     Int
+  brand       Brand        @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  generations Generation[]
+  createdAt   DateTime     @default(now())
+
+  @@unique([brandId, slug])
+}
+
+model Generation {
+  id          Int      @id @default(autoincrement())
+  code        String   // e.g. "RA6"
+  slug        String
+  yearStart   Int
+  yearEnd     Int?     // null = still in production / unknown
+  carModelId  Int
+  carModel    CarModel @relation(fields: [carModelId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+
+  @@unique([carModelId, slug])
+}
